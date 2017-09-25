@@ -39,10 +39,15 @@ from pygal.style import DarkColorizedStyle
 def languages_list (names) :
 	if names :
 		names = names.replace("Perl 6", "Perl%206")
-		names = names.replace("#", "%23")
 		names = re.sub ('(and|\.| |\n)', '', names, flags = re.S)
 		
 		real_list = names.split(",")
+		
+		has = "Perl" in real_list
+		
+		if not has :
+			real_list.append("Perl")
+		
 		return real_list
 	else:
 		return []
@@ -63,6 +68,25 @@ def languages_tar(srcPath, dstname) :
 	
 	tar.close()
 	
+def languages_draw (prefix, file_name, dir_name, time_title, names, counts) :
+	chart = pygal.Bar(interpolate='cubic', width=1000)
+	
+	config = Config()
+	config.show_legend = False
+	config.human_readable = True
+	config.fill = True
+	config.style=DarkColorizedStyle
+	config.label_font_size = 36
+	config.x_label_rotation = 45
+	
+	chart.config = config
+	
+	chart.title = file_name + " [" + time_title + "]"
+	chart.x_labels = names;
+	chart.add(prefix, counts)
+	
+	save_name = os.path.join(dir_name, file_name + ".svg")
+	chart.render_to_file (save_name)
 
 def languages_trending (llist, isStars) :
 	llen = len(llist)
@@ -86,7 +110,7 @@ def languages_trending (llist, isStars) :
 		os.mkdir (dir_name)
 		
 		for ll in sorted(llist):
-			url = 'https://api.github.com/search/repositories?q=language:' + ll + '&sort=' + keys
+			url = 'https://api.github.com/search/repositories?q=language:' + requests.compat.quote_plus(ll) + '&sort=' + keys
 			print (url)
 			
 			#if seq >= 2:
@@ -126,36 +150,14 @@ def languages_trending (llist, isStars) :
 				print (str(seq) + "> "+ language + ': ' + name + ' '+ html_url)
 				
 			file_name = ll
-			#chart = pygal.Bar()
-			#chart = pygal.Bar(fill=True, interpolate='cubic', style=DarkColorizedStyle, x_label_rotation = 45, width=1000)
 			
-			chart = pygal.Bar(interpolate='cubic', width=1000)
+			languages_draw (prefix, file_name, dir_name, time_title, names, counts)
 			
-			config = Config()
-			config.show_legend = False
-			config.human_readable = True
-			config.fill = True
-			config.style=DarkColorizedStyle
-			config.label_font_size = 36
-			config.x_label_rotation = 45
-			
-			chart.config = config
 
-			chart.title = file_name + " [" + time_title + "]"
-			chart.x_labels = names;
-			chart.add(prefix, counts)
-			
-			
-			#save_name = dir_name + "/" + file_name + ".svg"
-			#save_name = os.path.join(dir_name, file_name + ".svg") 
-			save_name = os.path.join(dir_name, file_name + ".png")
-			
-			#chart.render_to_file (save_name)
-			chart.render_to_png (save_name)
-			
 			seq += 1
 			time.sleep(5)
 			print ("\n")
 	
 		languages_tar(dir_name, dir_name + ".tag.gz")
+
 	
