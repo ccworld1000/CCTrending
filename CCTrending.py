@@ -27,6 +27,7 @@
 import os
 import re
 import time
+import random
 import pygal
 import tarfile
 import yagmail
@@ -38,7 +39,6 @@ from pygal.style import DarkColorizedStyle
 
 def languages_list (names) :
 	if names :
-		names = names.replace("Perl 6", "Perl%206")
 		names = re.sub ('(and|\.| |\n)', '', names, flags = re.S)
 		
 		real_list = names.split(",")
@@ -110,13 +110,16 @@ def languages_trending (llist, isStars) :
 		os.mkdir (dir_name)
 		
 		for ll in sorted(llist):
-			url = 'https://api.github.com/search/repositories?q=language:' + requests.compat.quote_plus(ll) + '&sort=' + keys
+			lang = ll
+			if ll == "Perl6" :
+				lang = "Perl 6"
+			url = 'https://api.github.com/search/repositories?q=language:' + requests.compat.quote_plus(lang) + '&sort=' + keys
 			print (url)
 			
 			#if seq >= 2:
 				#continue
 			
-			values = "mars" + str(seq)
+			values = "ccvalue" + str(random.randint(1, 9999))
 			cookies = {"name" : values}
 			req = requests.get (url, headers = headers, cookies = cookies)
 			status_code = req.status_code
@@ -159,5 +162,4 @@ def languages_trending (llist, isStars) :
 			print ("\n")
 	
 		languages_tar(dir_name, dir_name + ".tag.gz")
-
 	
