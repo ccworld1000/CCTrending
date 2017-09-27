@@ -28,6 +28,7 @@ import os
 import re
 import time
 import random
+import string
 import pygal
 import tarfile
 import yagmail
@@ -88,6 +89,18 @@ def languages_draw (prefix, file_name, dir_name, time_title, names, counts) :
 	save_name = os.path.join(dir_name, file_name + ".svg")
 	chart.render_to_file (save_name)
 
+def languages_random_string (number = 6) :
+	if not number :
+		return 'CCTrending'
+	
+	rstring = ''
+	letters = string.letters
+	for i in range (0, number) :
+		r = random.choice(letters)
+		rstring = rstring + r
+	
+	return rstring
+	
 def languages_trending (llist, isStars) :
 	llen = len(llist)
 	print (llen)
@@ -116,10 +129,17 @@ def languages_trending (llist, isStars) :
 			url = 'https://api.github.com/search/repositories?q=language:' + requests.compat.quote_plus(lang) + '&sort=' + keys
 			print (url)
 			
-			#if seq >= 2:
-				#continue
 			
-			values = "ccvalue" + str(random.randint(1, 9999))
+			
+			if re.search(r'#', ll) :
+				ll = re.sub(r'#', "Sharp", ll)
+			
+			isDebug = 0
+			if isDebug :
+				if seq >= 2:
+					continue
+			
+			values = languages_random_string()
 			cookies = {"name" : values}
 			req = requests.get (url, headers = headers, cookies = cookies)
 			status_code = req.status_code
@@ -156,10 +176,8 @@ def languages_trending (llist, isStars) :
 			
 			languages_draw (prefix, file_name, dir_name, time_title, names, counts)
 			
-
 			seq += 1
 			time.sleep(5)
 			print ("\n")
 	
-		languages_tar(dir_name, dir_name + ".tag.gz")
-	
+
